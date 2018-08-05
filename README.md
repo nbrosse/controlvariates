@@ -1,2 +1,2 @@
 # controlvariates
-Contains the code associated to the article "A new interpretation for control variates"
+Contains the code associated to the article "Diffusion approximations and control variates for MCMC".
