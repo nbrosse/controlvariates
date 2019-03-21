@@ -549,26 +549,26 @@ N = 10**5 # Burn in period
 n = 10**6 # Number of samples
 step= 10**(-2) # Step size
 
-tab_avar = np.zeros(n_simu)
-tab_avar_cv = np.zeros(n_simu)
-tab_avar_zv = np.zeros(n_simu)
+#tab_avar = np.zeros(n_simu)
+#tab_avar_cv = np.zeros(n_simu)
+#tab_avar_zv = np.zeros(n_simu)
+#
+#for k in np.arange(n_simu):
+traj, traj_grad = ULA(step,N,n,dU)
 
-for k in np.arange(n_simu):
-  traj, traj_grad = ULA(step,N,n,dU)
+ns = samples(traj,traj_grad,f)
+ns_cv = samples(traj,traj_grad,lambda t: f(t) + approx_Lpois(t))
+ns_zv = samples(traj,traj_grad,lambda t: f(t) + approx_Lpois_zv(t))
 
-  ns = samples(traj,traj_grad,f)
-  ns_cv = samples(traj,traj_grad,lambda t: f(t) + approx_Lpois(t))
-  ns_zv = samples(traj,traj_grad,lambda t: f(t) + approx_Lpois_zv(t))
-  
-  avar, avar_cv, avar_zv = ns[0][1], ns_cv[0][1], ns_zv[0][1]
+avar, avar_cv, avar_zv = ns[0][1], ns_cv[0][1], ns_zv[0][1]
 
-  tab_avar[k] = avar
-  tab_avar_cv[k] = avar_cv
-  tab_avar_zv[k] = avar_zv
+#tab_avar[k] = avar
+#tab_avar_cv[k] = avar_cv
+#tab_avar_zv[k] = avar_zv
 
 
-np.save('avar.npy', 
-        np.vstack((tab_avar, tab_avar_zv, tab_avar_cv)))
+#np.save('avar.npy', 
+#        np.vstack((tab_avar, tab_avar_zv, tab_avar_cv)))
 
 a, a_cv, a_zv = ns[1], ns_cv[1], ns_zv[1]
 
@@ -577,8 +577,8 @@ nb_cor = 100
 fig = plt.figure(figsize=(8,8))
 plt.rcParams.update({'font.size': 13})
 plt.bar(np.arange(nb_cor), a[:nb_cor], label=r"$\theta=0$", alpha=0.5)
-plt.bar(np.arange(nb_cor), a_zv[:nb_cor], label=r"$\theta=\theta^*$", alpha=0.5)
-plt.bar(np.arange(nb_cor), a_cv[:nb_cor], label=r"$\theta=\theta^{*}_{zv}$", alpha=0.5)
+plt.bar(np.arange(nb_cor), a_zv[:nb_cor], label=r"$\theta=\theta^{*}_{zv}$", alpha=0.5)
+plt.bar(np.arange(nb_cor), a_cv[:nb_cor], label=r"$\theta=\theta^{*}$", alpha=0.5)
 plt.legend()
 plt.title("Autocorrelations")
 plt.xlabel(r"$k$")

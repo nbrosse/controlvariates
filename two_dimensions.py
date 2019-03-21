@@ -12,109 +12,246 @@ from mpl_toolkits.mplot3d import Axes3D
 #import seaborn as sns
 import itertools
 
+# Mixture of two gaussians
 
-#%% mixture of 2 gaussians
+#%% Study of the truncation boundaries
   
+#mu_1 = np.array([-1., 0.])
+#mu_2 = np.array([1., 0.])
+#sigma2 = 0.5
+#nb_bases = 5
+#bound_x = 3
+#bound_y = 2
+#tab_bound_x = np.arange(2.5, 4, step=0.2)
+#tab_bound_y = np.arange(1.5, 3, step=0.2)
+#tab_var = np.zeros((len(tab_bound_x), len(tab_bound_y)))
+#
+#
+#for ix, iy in itertools.product(np.arange(len(tab_bound_x)), np.arange(len(tab_bound_y))):
+#    
+#  bound_x = tab_bound_x[ix]
+#  bound_y = tab_bound_y[iy]
+#  
+#  print('--------------------------')
+#  print('bound_x: {} , bound_y: {}'.format(bound_x, bound_y))
+#  print('--------------------------')
+#  
+#  meshsize = 100
+#  x = np.linspace(-bound_x, bound_x, meshsize)
+#  y = np.linspace(-bound_y, bound_y, meshsize)
+#  xv, yv = np.meshgrid(x, y)
+#  
+#  ind = 0
+#  dx_pi_dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  dy_pi_dypois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  pi_dpois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  for kx in np.arange(1, nb_bases+1):
+#    for ky in np.arange(1, nb_bases+1):
+#      dx = (kx*np.pi/2./bound_x)*np.cos(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#      dy = (ky*np.pi/2./bound_y)*np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.cos(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#      dx_pi_dxpois[:, :, ind] = dx
+#      dy_pi_dypois[:, :, ind] = dy
+#      pi_dpois[:, :, ind] = np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#      ind += 1
+#      
+#  dx_pi_dxpois_rect = np.reshape(dx_pi_dxpois, (meshsize**2, nb_bases**2))    
+#  dy_pi_dypois_rect = np.reshape(dy_pi_dypois, (meshsize**2, nb_bases**2))    
+#  
+#  div_pi_pois = np.hstack((dx_pi_dxpois_rect, dy_pi_dypois_rect))
+#  
+#  def f(y, x):
+#    return x + y**3 + np.sin(x) + np.cos(y)
+#          
+#  def pi_yx(y, x):
+#    return pi(np.array([x, y]))
+#    
+#  def pi(x):
+#    return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
+#            + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
+#  
+#  
+#  pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+#            + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+#  
+#  pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
+#  f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
+#  f_tilde_pi_mesh = (f_tilde_mesh * pi_mesh).flatten()
+#  
+#  coeffs_pois = np.linalg.lstsq(div_pi_pois, - f_tilde_pi_mesh, rcond=None)[0]
+#  
+#  pi_dxpois = np.dot(pi_dpois, coeffs_pois[:nb_bases**2])
+#  pi_dypois = np.dot(pi_dpois, coeffs_pois[nb_bases**2:])
+#  
+#  dxpois = np.divide(pi_dxpois, pi_mesh)
+#  dypois = np.divide(pi_dypois, pi_mesh)
+#  
+#  #fig = plt.figure()
+#  #ax = fig.gca(projection='3d')
+#  #ax.plot_surface(xv, yv, f_tilde_mesh) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#  #ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#  
+#  #plt.contour(xv, yv, f_tilde_mesh)
+#  #plt.colorbar()
+#  #plt.show()  
+#  
+#  plt.contour(xv, yv, pi_dypois)
+#  plt.colorbar()
+#  plt.show()
+#  
+#  plt.contour(xv, yv, pi_dxpois)
+#  plt.colorbar()
+#  plt.show()
+#  
+#             
+#  def U(x):
+#    return -np.log(pi(x))
+#  
+#  def dU(x):
+#    dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
+#    dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
+#    dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#    return - dpi / pi(x)
+#  
+#  var = dxpois*pi_dxpois + dypois*pi_dypois
+#  var = var[:-1, :-1]
+#  area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+#  var = 2*np.sum(var)*area
+#  tab_var[ix, iy] = var
+#  print('var: {}'.format(var))
+#
+#diff_var = (np.roll(tab_var, 1, axis=0) - tab_var)**2 + \
+#        (np.roll(tab_var, -1, axis=0) - tab_var)**2 + \
+#        (np.roll(tab_var, 1, axis=1) - tab_var)**2 + \
+#        (np.roll(tab_var, -1, axis=1) - tab_var)**2 
+#
+#diff_var = diff_var[1:-1, 1:-1]
+
+##plt.plot(tab_bound[tab_var<=100], tab_var[tab_var<=100])
+##
+#plt.contour(xv, yv, pi_mesh)
+#plt.grid(True)
+#plt.colorbar()
+#plt.show()
+
+#%% bound_x = 3, bound_y = 2, truncation
+
 mu_1 = np.array([-1., 0.])
 mu_2 = np.array([1., 0.])
 sigma2 = 0.5
 nb_bases = 5
-bound = 3
+bound_x = 3
+bound_y = 2
 
-for bound in np.arange(1, 5, step=0.2):
+meshsize = 100
+x = np.linspace(-bound_x, bound_x, meshsize)
+y = np.linspace(-bound_y, bound_y, meshsize)
+xv, yv = np.meshgrid(x, y)
+
+ind = 0
+dx_pi_dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
+dy_pi_dypois = np.zeros((meshsize, meshsize, nb_bases**2))
+pi_dpois = np.zeros((meshsize, meshsize, nb_bases**2))
+for kx in np.arange(1, nb_bases+1):
+  for ky in np.arange(1, nb_bases+1):
+    dx = (kx*np.pi/2./bound_x)*np.cos(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+    dy = (ky*np.pi/2./bound_y)*np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.cos(ky*np.pi*(yv+bound_y)/(2*bound_y))
+    dx_pi_dxpois[:, :, ind] = dx
+    dy_pi_dypois[:, :, ind] = dy
+    pi_dpois[:, :, ind] = np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+    ind += 1
     
-  print('--------------------------')
-  print('bound: {}'.format(bound))
-  print('--------------------------')
+dx_pi_dxpois_rect = np.reshape(dx_pi_dxpois, (meshsize**2, nb_bases**2))    
+dy_pi_dypois_rect = np.reshape(dy_pi_dypois, (meshsize**2, nb_bases**2))    
+
+div_pi_pois = np.hstack((dx_pi_dxpois_rect, dy_pi_dypois_rect))
+
+def f(y, x):
+  return x + y**3 + np.sin(x) + np.cos(y)
+        
+def pi_yx(y, x):
+  return pi(np.array([x, y]))
   
-  meshsize = 50
-  x = np.linspace(-bound, bound, meshsize)
-  y = np.linspace(-bound, bound, meshsize)
-  xv, yv = np.meshgrid(x, y)
-  
-  ind = 0
-  dx_pi_dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
-  dy_pi_dypois = np.zeros((meshsize, meshsize, nb_bases**2))
-  pi_dpois = np.zeros((meshsize, meshsize, nb_bases**2))
-  for kx in np.arange(1, nb_bases+1):
-    for ky in np.arange(1, nb_bases+1):
-      dx = (kx*np.pi/2./bound)*np.cos(kx*np.pi*(xv+bound)/(2*bound))*np.sin(ky*np.pi*(yv+bound)/(2*bound))
-      dy = (ky*np.pi/2./bound)*np.sin(kx*np.pi*(xv+bound)/(2*bound))*np.cos(ky*np.pi*(yv+bound)/(2*bound))
-      dx_pi_dxpois[:, :, ind] = dx
-      dy_pi_dypois[:, :, ind] = dy
-      pi_dpois[:, :, ind] = np.sin(kx*np.pi*(xv+bound)/(2*bound))*np.sin(ky*np.pi*(yv+bound)/(2*bound))
-      ind += 1
-      
-  dx_pi_dxpois_rect = np.reshape(dx_pi_dxpois, (meshsize**2, nb_bases**2))    
-  dy_pi_dypois_rect = np.reshape(dy_pi_dypois, (meshsize**2, nb_bases**2))    
-  
-  div_pi_pois = np.hstack((dx_pi_dxpois_rect, dy_pi_dypois_rect))
-  
-  def f(y, x):
-    return x + y**3 + np.sin(x) + np.cos(y)
-          
-  def pi_yx(y, x):
-    return pi(np.array([x, y]))
-    
-  def pi(x):
-    return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
-            + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
-  
-  
-  pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
-            + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
-  
-  pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound, bound, lambda x: -bound, lambda x :bound)[0]
-  f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
-  f_tilde_pi_mesh = (f_tilde_mesh * pi_mesh).flatten()
-  
-  coeffs_pois = np.linalg.lstsq(div_pi_pois, - f_tilde_pi_mesh, rcond=None)[0]
-  
-  pi_dxpois = np.dot(pi_dpois, coeffs_pois[:nb_bases**2])
-  pi_dypois = np.dot(pi_dpois, coeffs_pois[nb_bases**2:])
-  
-  dxpois = np.divide(pi_dxpois, pi_mesh)
-  dypois = np.divide(pi_dypois, pi_mesh)
-  
-  #fig = plt.figure()
-  #ax = fig.gca(projection='3d')
-  #ax.plot_surface(xv, yv, f_tilde_mesh) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-  #ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-  
-  #plt.contour(xv, yv, f_tilde_mesh)
-  #plt.colorbar()
-  #plt.show()  
-  
-  plt.contour(xv, yv, pi_dypois)
-  plt.colorbar()
-  plt.show()
-  
-  plt.contour(xv, yv, pi_dxpois)
-  plt.colorbar()
-  plt.show()
-  
-             
-  def U(x):
-    return -np.log(pi(x))
-  
-  def dU(x):
-    dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
-    dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
-    dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
-    return - dpi / pi(x)
-  
-  var = dxpois*pi_dxpois + dypois*pi_dypois
-  var = var[:-1, :-1]
-  area = (xv[0, 1] - xv[0, 0])**2
-  var = np.sum(var)*area
-  print('var: {}'.format(var))
+def pi(x):
+  return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
+          + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
+
+
+pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+          + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+
+pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
+f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
+f_tilde_pi_mesh = (f_tilde_mesh * pi_mesh).flatten()
+
+coeffs_pois = np.linalg.lstsq(div_pi_pois, - f_tilde_pi_mesh, rcond=None)[0]
+
+pi_dxpois = np.dot(pi_dpois, coeffs_pois[:nb_bases**2])
+pi_dypois = np.dot(pi_dpois, coeffs_pois[nb_bases**2:])
+
+dxpois = np.divide(pi_dxpois, pi_mesh)
+dypois = np.divide(pi_dypois, pi_mesh)
+
+#fig = plt.figure()
+#ax = fig.gca(projection='3d')
+#ax.plot_surface(xv, yv, f_tilde_mesh) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+
+plt.contour(xv, yv, f_tilde_mesh)
+plt.colorbar()
+plt.show()  
+
+plt.contour(xv, yv, pi_dypois)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, pi_dxpois)
+plt.colorbar()
+plt.show()
+
+           
+def U(x):
+  return -np.log(pi(x))
+
+def dU(x):
+  dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
+  dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
+  dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+  return - dpi / pi(x)
+
+dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+            (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+dypi_mesh = (yv-mu_1[1])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+            (yv-mu_2[1])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+dypi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+dxU_mesh = - np.divide(dxpi_mesh, pi_mesh)
+dyU_mesh = - np.divide(dypi_mesh, pi_mesh)
+
+var = dxpois*pi_dxpois + dypois*pi_dypois
+var = var[:-1, :-1]
+area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+var = 2*np.sum(var)*area
+#print('var: {}'.format(var))
+
+#fig = plt.figure(figsize=(8,8))
+#plt.rcParams.update({'font.size': 13})
+#plt.contour(xv, yv, pi_mesh)
+#plt.grid(True)
+#plt.colorbar()
+#plt.title(r"Contour plot of $\pi$")
+#plt.xlabel(r"$x_1$")
+#plt.ylabel(r"$x_2$")
+#plt.show()
+#fig.savefig("density_pi_2d.pdf", bbox_inches='tight')
+
+
 
 #%% Basis of functions
 
 p = 5
 s2 = 1.0
 mu_vec = [np.array([mu1, mu2]) for mu1, mu2 in itertools.product(
-    np.linspace(-bound, bound, num=p), np.linspace(-bound, bound, num=p))]
+    np.linspace(-bound_x, bound_x, num=p), np.linspace(-bound_y, bound_y, num=p))]
 
 
 psi = [(lambda mu1, mu2: lambda y, x: (2*np.pi*s2)**(-1)*np.exp(-((x-mu1)**2+(y-mu2)**2)/(2*s2)))(mu[0], mu[1]) for mu in mu_vec]
@@ -124,46 +261,57 @@ psi_mesh = [(2*np.pi*s2)**(-1)*np.exp(-((xv-mu[0])**2+(yv-mu[1])**2)/(2*s2)) for
 dx_psi = [(lambda mu1, mu2: lambda y, x: -(2*np.pi*s2)**(-1)*s2**(-1)*(x-mu1)*np.exp(-((x-mu1)**2+(y-mu2)**2)/(2*s2)))(mu[0], mu[1]) for mu in mu_vec]
 dy_psi = [(lambda mu1, mu2: lambda y, x: -(2*np.pi*s2)**(-1)*s2**(-1)*(y-mu2)*np.exp(-((x-mu1)**2+(y-mu2)**2)/(2*s2)))(mu[0], mu[1]) for mu in mu_vec]
 
+dx_psi_mesh = [-(2*np.pi*s2)**(-1)*s2**(-1)*(xv-mu[0])*np.exp(-((xv-mu[0])**2+(yv-mu[1])**2)/(2*s2)) for mu in mu_vec]
+dy_psi_mesh = [-(2*np.pi*s2)**(-1)*s2**(-1)*(yv-mu[1])*np.exp(-((xv-mu[0])**2+(yv-mu[1])**2)/(2*s2)) for mu in mu_vec]
+
 Lpsi = [(lambda i: (lambda mu1, mu2: lambda y, x: - dx_psi[i](y, x)*dU([x, y])[0] - dy_psi[i](y, x)*dU([x, y])[1] + (2*np.pi*s2)**(-1)*s2**(-1)*
          np.exp(-((x-mu1)**2+(y-mu2)**2)/(2*s2))*(((x-mu1)**2+(y-mu2)**2)/s2 - 2.))(mu[0], mu[1]))(i) for (i, mu) in zip(np.arange(p**2), mu_vec)]
 
+Lpsi_mesh = [- dx_psi_mesh[i]*dxU_mesh - dy_psi_mesh[i]*dyU_mesh + (2*np.pi*s2)**(-1)*s2**(-1)*
+             np.exp(-((xv-mu[0])**2+(yv-mu[1])**2)/(2*s2))*(((xv-mu[0])**2+(yv-mu[1])**2)/s2 - 2.) for i, mu in enumerate(mu_vec)]  
+  
 #for i in np.arange(p**2):
 #  plt.contour(xv, yv, psi_mesh[i])
 #  plt.show()
 
-H = np.zeros((p**2, p**2))
-for i in np.arange(p**2):
-  for j in np.arange(p**2):
-    H[i,j] = integrate.dblquad(lambda y, x: (dx_psi[i](y, x)*dx_psi[j](y, x)+
-     dy_psi[i](y, x)*dy_psi[j](y, x))*pi_yx(y, x), -bound, bound, lambda x:-bound, lambda x:bound)[0]
+# ------------- Expensive
+  
+#H = np.zeros((p**2, p**2))
+#for i in np.arange(p**2):
+#  for j in np.arange(p**2):
+#    H[i,j] = integrate.dblquad(lambda y, x: (dx_psi[i](y, x)*dx_psi[j](y, x)+
+#     dy_psi[i](y, x)*dy_psi[j](y, x))*pi_yx(y, x), -bound_y, bound_y, lambda x:-bound_x, lambda x:bound_x)[0]
+#
+#H_zv = np.zeros((p**2, p**2))
+#for i in np.arange(p**2):
+#  for j in np.arange(p**2):
+#    H_zv[i,j] = integrate.dblquad(lambda y, x: Lpsi[i](y, x)*Lpsi[j](y, x)*pi_yx(y, x), 
+#        -bound_y, bound_y, lambda x:-bound_x, lambda x:bound_x)[0]
+#
+#b = np.zeros(p**2)
+#for i in np.arange(p**2):
+#  b[i] = integrate.dblquad(lambda y, x: (f(y, x) - pi_f)*psi[i](y, x)*pi_yx(y, x), 
+#   -bound_y, bound_y, lambda x:-bound_x, lambda x:bound_x)[0]
+#
+#b_zv = np.zeros(p**2)
+#for i in np.arange(p**2):
+#  b_zv[i] = integrate.dblquad(lambda y, x: (f(y, x) - pi_f)*Lpsi[i](y, x)*pi_yx(y, x), 
+#      -bound_y, bound_y, lambda x:-bound_x, lambda x:bound_x)[0]
+#
+#cond_nb = np.linalg.cond(H)
+#eig = np.linalg.eigvalsh(H)
+#eig_zv = np.linalg.eigvalsh(H_zv)
+#
+#theta = np.linalg.solve(H, b)
+#theta_zv = - np.linalg.solve(H_zv, b_zv)
+#
+#np.savez('2d_mix_coeffs.npz', 
+#         H=H, H_zv=H_zv, b=b, b_zv=b_zv, 
+#         theta=theta, theta_zv=theta_zv)
 
-H_zv = np.zeros((p**2, p**2))
-for i in np.arange(p**2):
-  for j in np.arange(p**2):
-    H_zv[i,j] = integrate.dblquad(lambda y, x: Lpsi[i](y, x)*Lpsi[j](y, x)*pi_yx(y, x), 
-        -bound, bound, lambda x:-bound, lambda x:bound)[0]
+# ---------------
 
-b = np.zeros(p**2)
-for i in np.arange(p**2):
-  b[i] = integrate.dblquad(lambda y, x: (f(y, x) - pi_f)*psi[i](y, x)*pi_yx(y, x), 
-   -bound, bound, lambda x:-bound, lambda x:bound)[0]
-
-b_zv = np.zeros(p**2)
-for i in np.arange(p**2):
-  b_zv[i] = integrate.dblquad(lambda y, x: (f(y, x) - pi_f)*Lpsi[i](y, x)*pi_yx(y, x), 
-      -bound, bound, lambda x:-bound, lambda x:bound)[0]
-
-cond_nb = np.linalg.cond(H)
-eig = np.linalg.eigvalsh(H)
-eig_zv = np.linalg.eigvalsh(H_zv)
-
-theta = np.linalg.solve(H, b)
-theta_zv = - np.linalg.solve(H_zv, b_zv)
-
-np.savez('Hbtheta.npz', H=H, H_zv=H_zv, b=b, b_zv=b_zv, 
-         theta=theta, theta_zv=theta_zv)
-
-npzfile = np.load('Hbtheta.npz')
+npzfile = np.load('2d_mix_coeffs.npz')
 H = npzfile['H']
 H_zv = npzfile['H_zv']
 b_zv = npzfile['b_zv']
@@ -171,34 +319,115 @@ b = npzfile['b']
 theta = npzfile['theta']
 theta_zv = npzfile['theta_zv']
 
+eps = 0.0001
+H = H + eps*np.identity(H.shape[0])
 
-#def approx_dpois(y, x):
-#  dx, dy = 0., 0.
-#  for i in np.arange(p**2):
-#    dx += theta[i] * dx_psi[i](t)
-#    dy += theta[i] * dy_psi[i](t)
-#  return res
-#
-#def approx_Lpois(t):
-#  res = 0.
-#  for i in np.arange(p):
-#    res += theta[i] * Lpsi[i](t)
-#  return res
-#
-#def approx_dpois_L(t):
-#  res = 0.
-#  for i in np.arange(p):
-#    res += theta_L[i] * dpsi[i](t)
-#  return res
-#
-#def approx_Lpois_L(t):
-#  res = 0.
-#  for i in np.arange(p):
-#    res += theta_L[i] * Lpsi[i](t)
-#  return res
-#
-#var_cv = 2*integrate.quad(lambda x: (dpois(x) - approx_dpois(x))**2*pi(x), -bound, bound)[0]
-#var_zv = 2*integrate.quad(lambda x: (dpois(x) - approx_dpois_L(x))**2*pi(x), -bound, bound)[0]
+theta = np.linalg.solve(H, b)
+#theta_zv = - np.linalg.solve(H_zv, b_zv)
+
+approx_dxpois_mesh = np.zeros(dx_psi_mesh[0].shape)
+approx_dypois_mesh = np.zeros(dy_psi_mesh[0].shape)
+for i in np.arange(p**2):
+  approx_dxpois_mesh += theta[i] * dx_psi_mesh[i]  
+  approx_dypois_mesh += theta[i] * dy_psi_mesh[i]  
+
+approx_Lpois = np.zeros(Lpsi_mesh[0].shape)
+approx_Lpois_zv = np.zeros(Lpsi_mesh[0].shape)
+for i in np.arange(p**2):
+  approx_Lpois += theta[i] * Lpsi_mesh[i]  
+  approx_Lpois_zv += theta_zv[i] * Lpsi_mesh[i]  
+
+approx_dxpois_zv = np.zeros(dx_psi_mesh[0].shape)
+approx_dypois_zv = np.zeros(dy_psi_mesh[0].shape)
+for i in np.arange(p**2):
+  approx_dxpois_zv += theta_zv[i] * dx_psi_mesh[i]  
+  approx_dypois_zv += theta_zv[i] * dy_psi_mesh[i]  
+  
+plt.contour(xv, yv, approx_dxpois_mesh * pi_mesh)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, approx_dypois_mesh * pi_mesh)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, approx_dxpois_zv * pi_mesh)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, approx_dypois_zv * pi_mesh)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, approx_Lpois)
+plt.colorbar()
+plt.show()
+
+plt.contour(xv, yv, approx_Lpois_zv)
+plt.colorbar()
+plt.show()
+
+var_cv = ((approx_dxpois_mesh-dxpois)**2 + (approx_dypois_mesh-dypois)**2)*pi_mesh
+var_cv = var_cv[:-1, :-1]
+area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+var_cv = 2*np.sum(var_cv)*area
+#print('var_cv: {}'.format(var_cv))
+
+var_zv = ((approx_dxpois_zv-dxpois)**2 + (approx_dypois_zv-dypois)**2)*pi_mesh
+var_zv = var_zv[:-1, :-1]
+area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+var_zv = 2*np.sum(var_zv)*area
+#print('var_zv: {}'.format(var_zv))
+
+
+#%% figures
+
+fig = plt.figure(figsize=(16,24))
+plt.rcParams.update({'font.size': 13}) # default 10
+plt.subplot(3,2,1)
+plt.contour(xv, yv, pi_dxpois)
+plt.title(r"$\pi \partial_1 \hat{f}$")
+plt.colorbar()
+plt.subplot(3,2,2)
+plt.contour(xv, yv, pi_dypois)
+plt.title(r"$\pi \partial_2 \hat{f}$")
+plt.colorbar()
+plt.subplot(3,2,3)
+plt.contour(xv, yv, approx_dxpois_mesh * pi_mesh)
+plt.colorbar()
+plt.title(r"$\pi \partial_1 (\theta^*)^{T} \psi$")
+plt.subplot(3,2,4)
+plt.contour(xv, yv, approx_dypois_mesh * pi_mesh)
+plt.colorbar()
+plt.title(r"$\pi \partial_2 (\theta^*)^{T} \psi$")
+plt.subplot(3,2,5)
+plt.contour(xv, yv, approx_dxpois_zv * pi_mesh)
+plt.colorbar()
+plt.title(r"$\pi \partial_1 (\theta^*_{zv})^{T} \psi$")
+plt.subplot(3,2,6)
+plt.contour(xv, yv, approx_dypois_zv * pi_mesh)
+plt.colorbar()
+plt.title(r"$\pi \partial_2 (\theta^*_{zv})^{T} \psi$")
+plt.show()
+#fig.savefig("approx_pois_2d.pdf", bbox_inches='tight')
+
+
+fig = plt.figure(figsize=(16,16))
+plt.rcParams.update({'font.size': 13}) # default 10
+plt.subplot(2,2,1)
+plt.contour(xv, yv, f_tilde_mesh)
+plt.title(r"$\tilde{f}$")
+plt.colorbar()
+plt.subplot(2,2,2)
+plt.contour(xv, yv, -approx_Lpois)
+plt.title(r"$- \mathcal{L} (\theta^*)^{T} \psi$")
+plt.colorbar()
+plt.subplot(2,2,3)
+plt.contour(xv, yv, -approx_Lpois_zv)
+plt.title(r"$- \mathcal{L} (\theta^*_{zv})^{T} \psi$")
+plt.colorbar()
+plt.show()
+#fig.savefig("approx_Lpois_2d.pdf", bbox_inches='tight')
 
 #%% Samplers and analysis
 
@@ -259,7 +488,7 @@ def ULA(step, N, n, gradU):
 
 """ Control Variates and estimators for mean, asymptotic variance """
 
-def normalSamples(traj, traj_grad, theta=None):
+def analyse_samples(traj, traj_grad, theta=None):
   n = traj.shape[0]
   if theta is None:
     samples = traj[:, 0] + np.power(traj[:, 1], 3) + np.sin(traj[:, 0]) + np.cos(traj[:,1])
@@ -303,177 +532,6 @@ def normalSamples(traj, traj_grad, theta=None):
   return np.hstack((mean_samples, var_samples)), tp1
 #  return tp1
 
-#def CVpolyOne(traj,traj_grad,f):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    covariance = np.cov(np.concatenate((traj[:,np.newaxis], samples[:,np.newaxis]), axis=1), 
-#                        rowvar=False)
-#    paramCV1 = covariance[0, 1]
-#    CV1 = samples - paramCV1*traj_grad
-#    mean_CV1 = np.mean(CV1)
-#    CV1 -= mean_CV1
-#    tp1 = (1./n)*signal.fftconvolve(CV1, CV1[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_CV1 = -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_CV1, var_CV1, paramCV1))
-#
-#def CVft(traj, traj_grad,f,p):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    poisson = np.zeros((n,4*p+2))
-#    poisson[:,0] = traj
-#    poisson[:,1] = np.power(traj,2)
-#    for i in np.arange(1,p+1):
-#        poisson[:,i+1] = np.multiply(traj, np.cos(i*traj))
-#        poisson[:,i+1+p] = np.multiply(traj, np.sin(i*traj))
-#        poisson[:,i+1+2*p] = np.multiply(np.power(traj,2), np.cos(i*traj))
-#        poisson[:,i+1+3*p] = np.multiply(np.power(traj,2), np.sin(i*traj))
-#    Lpoisson = np.zeros((n,4*p+2))
-#    Lpoisson[:,0] = - traj_grad
-#    Lpoisson[:,1] = - 2*traj_grad*traj + 2
-#    for i in np.arange(1,p+1):        
-#        Lpoisson[:,i+1] = - traj_grad * (np.cos(i*traj) - i*traj*np.sin(i*traj)) \
-#                        - 2*i*np.sin(i*traj) - i**2*traj*np.cos(i*traj)
-#        Lpoisson[:,i+1+p] = - traj_grad * (np.sin(i*traj) + i*traj*np.cos(i*traj)) \
-#                        + 2*i*np.cos(i*traj) - i**2*traj*np.sin(i*traj)
-#        Lpoisson[:,i+1+2*p] = - traj_grad * (2*traj*np.cos(i*traj) - i*np.power(traj,2)*np.sin(i*traj)) \
-#                        + 2*np.cos(i*traj) - 4*i*traj*np.sin(i*traj) - i**2*np.power(traj,2)*np.cos(i*traj)   
-#        Lpoisson[:,i+1+3*p] = - traj_grad * (2*traj*np.sin(i*traj) + i*np.power(traj,2)*np.cos(i*traj)) \
-#                        + 2*np.sin(i*traj) + 4*i*traj*np.cos(i*traj) - i**2*np.power(traj,2)*np.sin(i*traj)                   
-#    cov1 = np.cov(np.concatenate((poisson, -Lpoisson), axis=1), rowvar=False)
-#    pbase = poisson.shape[1]
-#    A = np.linalg.inv(cov1[0:pbase, pbase:])
-#    cov2 = np.cov(np.concatenate((poisson, samples[:,np.newaxis]),axis=1), rowvar=False)
-#    B = cov2[0:pbase, pbase:]
-#    paramCV = np.dot(A,B)
-#    CV = samples + np.dot(Lpoisson, paramCV).flatten()
-#    mean_CV = np.mean(CV)
-#    CV -= mean_CV
-#    tp1 = (1./n)*signal.fftconvolve(CV, CV[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_CV = -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_CV, var_CV, paramCV.flatten()))
-#
-#
-#def CVpolyp(traj, traj_grad,f,p):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    poisson = np.zeros((n,p))
-#    for i in np.arange(p):
-#        poisson[:,i] = np.power(traj, i+1)
-#    Lpoisson = np.zeros((n,p))
-#    for i in np.arange(p):        
-#        Lpoisson[:,i] = (i+1)*i*np.power(traj, i-1) \
-#                        - (i+1)*np.multiply(np.power(traj, i), traj_grad)
-#    cov1 = np.cov(np.concatenate((poisson, -Lpoisson), axis=1), rowvar=False)
-#    A = np.linalg.inv(cov1[0:p, p:])
-#    cov2 = np.cov(np.concatenate((poisson, samples[:,np.newaxis]),axis=1), rowvar=False)
-#    B = cov2[0:p, p:]
-#    paramCV = np.dot(A,B)
-#    CV = samples + np.dot(Lpoisson, paramCV).flatten()
-#    mean_CV = np.mean(CV)
-#    CV -= mean_CV
-#    tp1 = (1./n)*signal.fftconvolve(CV, CV[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_CV = -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_CV, var_CV, paramCV.flatten()))
-#
-#def ZVpolyOne(traj, traj_grad,f):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    cov1 = np.cov(traj_grad)
-#    A = cov1**(-1)
-#    covariance = np.cov(np.concatenate((-traj_grad[:,np.newaxis], samples[:,np.newaxis]), axis=1), 
-#                        rowvar=False)
-#    paramZV1 = -covariance[0, 1]*A
-#    ZV1 = samples - paramZV1*traj_grad
-#    mean_ZV1 = np.mean(ZV1)
-#    ZV1 -= mean_ZV1
-#    tp1 = (1./n)*signal.fftconvolve(ZV1, ZV1[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_ZV1= -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_ZV1, var_ZV1, paramZV1))
-#
-#def ZVft(traj, traj_grad,f,p):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    poisson = np.zeros((n,4*p+2))
-#    poisson[:,0] = traj
-#    poisson[:,1] = np.power(traj,2)
-#    for i in np.arange(1,p+1):
-#        poisson[:,i+1] = np.multiply(traj, np.cos(i*traj))
-#        poisson[:,i+1+p] = np.multiply(traj, np.sin(i*traj))
-#        poisson[:,i+1+2*p] = np.multiply(np.power(traj,2), np.cos(i*traj))
-#        poisson[:,i+1+3*p] = np.multiply(np.power(traj,2), np.sin(i*traj))
-#    Lpoisson = np.zeros((n,4*p+2))
-#    Lpoisson[:,0] = - traj_grad
-#    Lpoisson[:,1] = - 2*traj_grad*traj + 2
-#    for i in np.arange(1,p+1):        
-#        Lpoisson[:,i+1] = - traj_grad * (np.cos(i*traj) - i*traj*np.sin(i*traj)) \
-#                        - 2*i*np.sin(i*traj) - i**2*traj*np.cos(i*traj)
-#        Lpoisson[:,i+1+p] = - traj_grad * (np.sin(i*traj) + i*traj*np.cos(i*traj)) \
-#                        + 2*i*np.cos(i*traj) - i**2*traj*np.sin(i*traj)
-#        Lpoisson[:,i+1+2*p] = - traj_grad * (2*traj*np.cos(i*traj) - i*np.power(traj,2)*np.sin(i*traj)) \
-#                        + 2*np.cos(i*traj) - 4*i*traj*np.sin(i*traj) - i**2*np.power(traj,2)*np.cos(i*traj)   
-#        Lpoisson[:,i+1+3*p] = - traj_grad * (2*traj*np.sin(i*traj) + i*np.power(traj,2)*np.cos(i*traj)) \
-#                        + 2*np.sin(i*traj) + 4*i*traj*np.cos(i*traj) - i**2*np.power(traj,2)*np.sin(i*traj)    
-#    cov1 = np.cov(Lpoisson, rowvar=False)
-#    pbase = poisson.shape[1]
-#    A = np.linalg.inv(cov1)
-#    cov2 = np.cov(np.concatenate((Lpoisson, samples[:,np.newaxis]),axis=1), rowvar=False)
-#    B = cov2[0:pbase, pbase:]
-#    paramZV = - np.dot(A,B)
-#    ZV = samples + np.dot(Lpoisson, paramZV).flatten()
-#    mean_ZV = np.mean(ZV)
-#    ZV -= mean_ZV
-#    tp1 = (1./n)*signal.fftconvolve(ZV, ZV[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_ZV = -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_ZV, var_ZV, paramZV.flatten()))
-#
-#def ZVpolyp(traj, traj_grad,f,p):
-#    n = traj.shape[0]
-#    samples = np.vectorize(f)(traj)
-#    Lpoisson = np.zeros((n,p))
-#    for i in np.arange(p):        
-#        Lpoisson[:,i] = (i+1)*i*np.power(traj, i-1) \
-#                        - (i+1)*np.multiply(np.power(traj, i), traj_grad)
-#    cov1 = np.cov(Lpoisson, rowvar=False)
-#    A = np.linalg.inv(cov1)
-#    cov2 = np.cov(np.concatenate((Lpoisson, samples[:,np.newaxis]),axis=1), rowvar=False)
-#    B = cov2[0:p, p:]
-#    paramZV = - np.dot(A,B)
-#    ZV = samples + np.dot(Lpoisson, paramZV).flatten()
-#    mean_ZV = np.mean(ZV)
-#    ZV -= mean_ZV
-#    tp1 = (1./n)*signal.fftconvolve(ZV, ZV[::-1], mode="same")
-#    tp1 = tp1[:(int(n/2)+1)]
-#    tp1 = tp1[::-1]
-#    gam0 = tp1[0]
-#    bn = int(n**(1./2))
-#    wn = 1./2 + (1./2)*np.cos((np.pi/bn)*np.arange(bn))
-#    var_ZV = -gam0+2*np.dot(wn, tp1[:bn])
-#    return np.hstack((mean_ZV, var_ZV, paramZV.flatten()))
 
 #%% Simulations
 
@@ -486,156 +544,44 @@ def normalSamples(traj, traj_grad, theta=None):
 N = 10**5 # Burn in period
 n = 10**6 # Number of samples
 step= 10**(-2) # Step size good one 1.
+#n_simu = 10
+
+#tab_avar = np.zeros(n_simu)
+#tab_avar_cv = np.zeros(n_simu)
+#tab_avar_zv = np.zeros(n_simu)
+#
+#for k in np.arange(n_simu):
 
 traj, traj_grad = ULA(step,N,n,dU)
 
+ns = analyse_samples(traj,traj_grad)
+ns_cv = analyse_samples(traj,traj_grad,theta=theta)
+ns_zv = analyse_samples(traj,traj_grad,theta=theta_zv)
 
+#avar, avar_cv, avar_zv = ns[0][1], ns_cv[0][1], ns_zv[0][1]
 
-ns = normalSamples(traj,traj_grad)
-ns_cv = normalSamples(traj,traj_grad,theta=theta)
-ns_zv = normalSamples(traj,traj_grad,theta=theta_zv)
-
+#tab_avar[k] = avar
+#tab_avar_cv[k] = avar_cv
+#tab_avar_zv[k] = avar_zv
+  
+#np.save('avar.npy', 
+#        np.vstack((tab_avar, tab_avar_zv, tab_avar_cv)))
+  
 a, a_cv, a_zv = ns[1], ns_cv[1], ns_zv[1]
 
 nb_cor = 100
 
-plt.bar(np.arange(nb_cor), a[:nb_cor], label='without')
-#plt.title('corr without vr')
-#plt.show()
-#plt.title('corr with cv')
-#plt.show()
-plt.bar(np.arange(nb_cor), a_cv[:nb_cor], label='cv')
-plt.bar(np.arange(nb_cor), a_zv[:nb_cor], label='zv')
-#plt.title('corr with zv')
+fig = plt.figure(figsize=(8,8))
+plt.rcParams.update({'font.size': 13})
+plt.bar(np.arange(nb_cor), a[:nb_cor], label=r"$\theta=0$", alpha=0.5)
+plt.bar(np.arange(nb_cor), a_zv[:nb_cor], label=r"$\theta=\theta^{*}_{zv}$", alpha=0.5)
+plt.bar(np.arange(nb_cor), a_cv[:nb_cor], label=r"$\theta=\theta^{*}$", alpha=0.5)
 plt.legend()
+plt.title("Autocorrelations")
+plt.xlabel(r"$k$")
+plt.ylabel(r"$\omega^{h}_{N,n}(k)$")
 plt.show()
+#fig.savefig("autocorrelations_2d.pdf", bbox_inches='tight')
 
-
-traj, traj_grad = traj_mala, traj_grad_mala
-
-plt.hist(traj, bins=100, density=True)
-
-pft = 2
-sauvft = np.zeros((5, 4*pft+2+2))
-sauvft[0,:2] = normalSamples(traj,traj_grad,f) # Normal samples
-sauvft[1,:3] = CVpolyOne(traj,traj_grad,f) # CV1
-sauvft[2,:3] = ZVpolyOne(traj,traj_grad,f) # ZV1
-sauvft[3,:] = CVft(traj,traj_grad,f,pft)
-sauvft[4,:] = ZVft(traj,traj_grad,f,pft)
-
-grid = np.linspace(-mg.bound,mg.bound,num=1000)
-gradU_grid = np.vectorize(gradU)(grid)
-
-# Construction of the basis function on grid, cos, sin
-poisson = np.zeros((1000,4*pft+2))
-poisson[:,0] = grid
-poisson[:,1] = np.power(grid,2)
-for i in np.arange(1,pft+1):
-    poisson[:,i+1] = np.multiply(grid, np.cos(i*grid))
-    poisson[:,i+1+pft] = np.multiply(grid, np.sin(i*grid))
-    poisson[:,i+1+2*pft] = np.multiply(np.power(grid,2), np.cos(i*grid))
-    poisson[:,i+1+3*pft] = np.multiply(np.power(grid,2), np.sin(i*grid))
-Lpoisson = np.zeros((1000,4*pft+2))
-Lpoisson[:,0] = - gradU_grid
-Lpoisson[:,1] = - 2*gradU_grid*grid + 2
-for i in np.arange(1,pft+1):        
-    Lpoisson[:,i+1] = - gradU_grid * (np.cos(i*grid) - i*grid*np.sin(i*grid)) \
-                    - 2*i*np.sin(i*grid) - i**2*grid*np.cos(i*grid)
-    Lpoisson[:,i+1+pft] = - gradU_grid * (np.sin(i*grid) - i*grid*np.cos(i*grid)) \
-                    + 2*i*np.cos(i*grid) - i**2*grid*np.sin(i*grid)
-    Lpoisson[:,i+1+2*pft] = - gradU_grid * (2*grid*np.cos(i*grid) - i*np.power(grid,2)*np.sin(i*grid)) \
-                    + 2*np.cos(i*grid) - 4*i*grid*np.sin(i*grid) - i**2*np.power(grid,2)*np.cos(i*grid)   
-    Lpoisson[:,i+1+3*pft] = - gradU_grid * (2*grid*np.sin(i*grid) + i*np.power(grid,2)*np.cos(i*grid)) \
-                    + 2*np.sin(i*grid) + 4*i*grid*np.cos(i*grid) - i**2*np.power(grid,2)*np.sin(i*grid) 
-
-# CV test function cos, sin
-plt.plot(grid, grid + (Lpoisson @ sauvft[3,2:]).flatten())
-plt.grid(True)
-plt.show()
-
-# ZV test function cos, sin
-plt.plot(grid, grid + (Lpoisson @ sauvft[4,2:]).flatten())
-plt.grid(True)
-plt.show()
-
-#CV solution poisson, cos, sin
-plt.plot(grid, (poisson @ sauvft[3,2:]).flatten())
-plt.grid(True)
-plt.show()
-
-#ZV solution poisson, cos, sin
-plt.plot(grid, (poisson @ sauvft[4,2:]).flatten())
-plt.grid(True)
-plt.show()
-
-#%% Polynomials only
-
-p = 10
-sauv = np.zeros((2*p+1, 2+p))
-sauv[0,:2] = normalSamples(traj,traj_grad,f) # Normal samples
-sauv[1,:3] = CVpolyOne(traj,traj_grad,f) # CV1
-sauv[2,:3] = ZVpolyOne(traj,traj_grad,f) # ZV1
-for i in np.arange(2,p+1):
-    sauv[2*i-1,:(i+2)] = CVpolyp(traj,traj_grad,f,i)
-    sauv[2*i,:(i+2)] = ZVpolyp(traj,traj_grad,f,i)
-
-grid = np.linspace(-mg.bound,mg.bound,num=1000)
-gradU_grid = np.vectorize(gradU)(grid)
-
-# Construction of the basis function, polynomials
-A = np.array([(i+1)*(i*np.power(grid,i-1) - np.multiply(np.power(grid,i), gradU_grid)) \
-              for i in np.arange(p)]).T
-
-# CV test funcion
-plt.figure(1)
-ax = plt.gca()
-colors = cycle(['b', 'r', 'g', 'c', 'k'])
-for i, c in zip(np.arange(p), colors):
-    v = grid + np.dot(A, sauv[2*i+1,2:]).flatten()
-    plt.plot(grid, v, c=c, label=str(i+1))
-plt.title('CV test function')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# ZV test function
-plt.figure(2)
-ax = plt.gca()
-colors = cycle(['b', 'r', 'g', 'c', 'k'])
-for i, c in zip(np.arange(p), colors):
-    v = grid + np.dot(A, sauv[2*i+2,2:]).flatten()
-    plt.plot(grid, v, c=c, label=str(i+1))
-plt.title('ZV test function')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# Poisson solution
-
-B = np.array([np.power(grid,i+1) for i in np.arange(p)]).T
-
-# CV test funcion
-plt.figure(3)
-ax = plt.gca()
-colors = cycle(['b', 'r', 'g', 'c', 'k'])
-for i, c in zip(np.arange(p), colors):
-    v = np.dot(B, sauv[2*i+1,2:]).flatten()
-    plt.plot(grid, v, c=c, label=str(i+1))
-plt.title('CV poisson solution')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# ZV
-plt.figure(4)
-ax = plt.gca()
-colors = cycle(['b', 'r', 'g', 'c', 'k'])
-for i, c in zip(np.arange(p), colors):
-    v = np.dot(B, sauv[2*i+2,2:]).flatten()
-    plt.plot(grid, v, c=c, label=str(i+1))
-plt.title('ZV poisson solution')
-plt.legend()
-plt.grid(True)
-plt.show()
 
 
