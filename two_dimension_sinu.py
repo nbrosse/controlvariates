@@ -14,6 +14,249 @@ import itertools
 
 # Mixture of two gaussians
 
+#%% Approx. \nabla\hat{f} - sutdy of the truncation boundaries
+
+#mu_1 = np.array([-1., 0.])
+#mu_2 = np.array([1., 0.])
+#sigma2 = 0.5
+#s2 = 1.0
+#nb_bases = 5
+#bound_x = 3
+#bound_y = 2
+#tab_bound_x = np.arange(2.5, 5, step=0.2)
+#tab_bound_y = np.arange(1.5, 4, step=0.2)
+#tab_var = np.zeros((len(tab_bound_x), len(tab_bound_y)))
+#
+#
+#
+#for ix, iy in itertools.product(np.arange(len(tab_bound_x)), np.arange(len(tab_bound_y))):
+#    
+#  bound_x = tab_bound_x[ix]
+#  bound_y = tab_bound_y[iy]
+#  
+#  print('--------------------------')
+#  print('bound_x: {} , bound_y: {}'.format(bound_x, bound_y))
+#  print('--------------------------')
+#  
+#  meshsize = 100
+#  x = np.linspace(-bound_x, bound_x, meshsize)
+#  y = np.linspace(-bound_y, bound_y, meshsize)
+#  xv, yv = np.meshgrid(x, y)
+#  
+#  mu_vec = [(mux, muy) for mux, muy in itertools.product(
+#             np.linspace(-bound_x, bound_x, num=nb_bases),
+#             np.linspace(-bound_y, bound_y, num=nb_bases))]
+#
+#  pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+#          + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+#  dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+#            (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+#  dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#  dypi_mesh = (yv-mu_1[1])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+#              (yv-mu_2[1])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+#  dypi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#  dxU_mesh = - np.divide(dxpi_mesh, pi_mesh)
+#  dyU_mesh = - np.divide(dypi_mesh, pi_mesh)
+#
+#  Lx_pois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  Ly_pois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  dypois = np.zeros((meshsize, meshsize, nb_bases**2))
+#  for k, mu in enumerate(mu_vec):
+#    dxp = (2*np.pi*s2)**(-1)*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+#    dyp = (2*np.pi*s2)**(-1)*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+#    dxpois[:, :, k] = dxp
+#    dypois[:, :, k] = dyp
+#    dxdxpois = -(2*np.pi*s2)**(-1)*s2**(-1)*(xv-mu[0])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+#    dydypois = -(2*np.pi*s2)**(-1)*s2**(-1)*(yv-mu[1])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+#    
+#    dxU_dxpois = dxU_mesh * dxp
+#    dyU_dypois = dyU_mesh * dyp
+#    
+#    Lx_pois[:, :, k] = - dxU_dxpois + dxdxpois
+#    Ly_pois[:, :, k] = - dyU_dypois + dydypois
+#    
+#  Lx_pois = np.reshape(Lx_pois, (meshsize**2, nb_bases**2))    
+#  Ly_pois = np.reshape(Ly_pois, (meshsize**2, nb_bases**2))    
+#  
+#  L_pois = np.hstack((Lx_pois, Ly_pois))
+#  
+#  def f(y, x):
+#    return x + y**3 + np.sin(x) + np.cos(y)
+#          
+#  def pi_yx(y, x):
+#    return pi(np.array([x, y]))
+#    
+#  def pi(x):
+#    return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
+#            + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
+#  
+#  pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+#            + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+#  
+#  pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
+#  f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
+#  f_tilde_flatten = f_tilde_mesh.flatten()
+#  
+#  coeffs_pois = np.linalg.lstsq(L_pois, - f_tilde_flatten, rcond=None)[0]
+#  
+#  dxpois = np.dot(dxpois, coeffs_pois[:nb_bases**2])
+#  dypois = np.dot(dypois, coeffs_pois[nb_bases**2:])
+#  
+##  fig = plt.figure()
+##  ax = fig.gca(projection='3d')
+##  ax.plot_surface(xv, yv, dypois) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+##  ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#  
+#  #plt.contour(xv, yv, f_tilde_mesh)
+#  #plt.colorbar()
+#  #plt.show()  
+#  
+#  
+#  plt.contour(xv, yv, dxpois)
+#  plt.colorbar()
+#  plt.title("dxpois")
+#  plt.show()
+#  
+#  plt.contour(xv, yv, dypois)
+#  plt.colorbar()
+#  plt.title("dypois")
+#  plt.show()
+#             
+#  
+#  var = (dxpois**2 + dypois**2)*pi_mesh
+#  var = var[:-1, :-1]
+#  area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+#  var = 2*np.sum(var)*area
+#  tab_var[ix, iy] = var
+#  print('var: {}'.format(var))
+
+#diff_var = (np.roll(tab_var, 1, axis=0) - tab_var)**2 + \
+#        (np.roll(tab_var, -1, axis=0) - tab_var)**2 + \
+#        (np.roll(tab_var, 1, axis=1) - tab_var)**2 + \
+#        (np.roll(tab_var, -1, axis=1) - tab_var)**2 
+#
+#diff_var = diff_var[1:-1, 1:-1]
+
+#plt.plot(tab_bound[tab_var<=100], tab_var[tab_var<=100])
+#
+#plt.contour(xv, yv, pi_mesh)
+#plt.grid(True)
+#plt.colorbar()
+#plt.show()
+  
+#%% Approx \nabla \hat{f}
+  
+  
+mu_1 = np.array([-1., 0.])
+mu_2 = np.array([1., 0.])
+sigma2 = 0.5
+s2 = 1.0
+nb_bases = 5
+bound_x = 4
+bound_y = 3
+
+meshsize = 100
+x = np.linspace(-bound_x, bound_x, meshsize)
+y = np.linspace(-bound_y, bound_y, meshsize)
+xv, yv = np.meshgrid(x, y)
+
+mu_vec = [(mux, muy) for mux, muy in itertools.product(
+           np.linspace(-bound_x, bound_x, num=nb_bases),
+           np.linspace(-bound_y, bound_y, num=nb_bases))]
+
+pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+          (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+dypi_mesh = (yv-mu_1[1])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+            (yv-mu_2[1])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+dypi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+dxU_mesh = - np.divide(dxpi_mesh, pi_mesh)
+dyU_mesh = - np.divide(dypi_mesh, pi_mesh)
+
+Lx_pois = np.zeros((meshsize, meshsize, nb_bases**2))
+Ly_pois = np.zeros((meshsize, meshsize, nb_bases**2))
+dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
+dypois = np.zeros((meshsize, meshsize, nb_bases**2))
+for k, mu in enumerate(mu_vec):
+  dxp = (2*np.pi*s2)**(-1)*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+  dyp = (2*np.pi*s2)**(-1)*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+  dxpois[:, :, k] = dxp
+  dypois[:, :, k] = dyp
+  dxdxpois = -(2*np.pi*s2)**(-1)*s2**(-1)*(xv-mu[0])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+  dydypois = -(2*np.pi*s2)**(-1)*s2**(-1)*(yv-mu[1])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
+  
+  dxU_dxpois = dxU_mesh * dxp
+  dyU_dypois = dyU_mesh * dyp
+  
+  Lx_pois[:, :, k] = - dxU_dxpois + dxdxpois
+  Ly_pois[:, :, k] = - dyU_dypois + dydypois
+  
+Lx_pois = np.reshape(Lx_pois, (meshsize**2, nb_bases**2))    
+Ly_pois = np.reshape(Ly_pois, (meshsize**2, nb_bases**2))    
+
+L_pois = np.hstack((Lx_pois, Ly_pois))
+
+def f(y, x):
+  return x + y**3 + np.sin(x) + np.cos(y)
+        
+def pi_yx(y, x):
+  return pi(np.array([x, y]))
+  
+def pi(x):
+  return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
+          + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
+
+pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+          + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+
+pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
+f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
+f_tilde_flatten = f_tilde_mesh.flatten()
+
+coeffs_pois = np.linalg.lstsq(L_pois, - f_tilde_flatten, rcond=None)[0]
+
+dxpois = np.dot(dxpois, coeffs_pois[:nb_bases**2])
+dypois = np.dot(dypois, coeffs_pois[nb_bases**2:])
+
+#  fig = plt.figure()
+#  ax = fig.gca(projection='3d')
+#  ax.plot_surface(xv, yv, dypois) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#  ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+  
+#plt.contour(xv, yv, f_tilde_mesh)
+#plt.colorbar()
+#plt.show()  
+
+
+plt.contour(xv, yv, dxpois)
+plt.colorbar()
+plt.title("dxpois")
+plt.show()
+
+plt.contour(xv, yv, dypois)
+plt.colorbar()
+plt.title("dypois")
+plt.show()
+           
+  
+var = (dxpois**2 + dypois**2)*pi_mesh
+var = var[:-1, :-1]
+area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+var = 2*np.sum(var)*area
+print('var: {}'.format(var))
+
+def U(x):
+  return -np.log(pi(x))
+
+def dU(x):
+  dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
+  dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
+  dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+  return - dpi / pi(x)
+
 #%% Study of the truncation boundaries
   
 #mu_1 = np.array([-1., 0.])
@@ -135,102 +378,102 @@ import itertools
 
 #%% bound_x = 3, bound_y = 2, truncation
 
-mu_1 = np.array([-1., 0.])
-mu_2 = np.array([1., 0.])
-sigma2 = 0.5
-nb_bases = 5
-bound_x = 3
-bound_y = 2
-
-meshsize = 100
-x = np.linspace(-bound_x, bound_x, meshsize)
-y = np.linspace(-bound_y, bound_y, meshsize)
-xv, yv = np.meshgrid(x, y)
-
-ind = 0
-dx_pi_dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
-dy_pi_dypois = np.zeros((meshsize, meshsize, nb_bases**2))
-pi_dpois = np.zeros((meshsize, meshsize, nb_bases**2))
-for kx in np.arange(1, nb_bases+1):
-  for ky in np.arange(1, nb_bases+1):
-    dx = (kx*np.pi/2./bound_x)*np.cos(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
-    dy = (ky*np.pi/2./bound_y)*np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.cos(ky*np.pi*(yv+bound_y)/(2*bound_y))
-    dx_pi_dxpois[:, :, ind] = dx
-    dy_pi_dypois[:, :, ind] = dy
-    pi_dpois[:, :, ind] = np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
-    ind += 1
-    
-dx_pi_dxpois_rect = np.reshape(dx_pi_dxpois, (meshsize**2, nb_bases**2))    
-dy_pi_dypois_rect = np.reshape(dy_pi_dypois, (meshsize**2, nb_bases**2))    
-
-div_pi_pois = np.hstack((dx_pi_dxpois_rect, dy_pi_dypois_rect))
-
-def f(y, x):
-  return x + y**3 + np.sin(x) + np.cos(y)
-        
-def pi_yx(y, x):
-  return pi(np.array([x, y]))
-  
-def pi(x):
-  return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
-          + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
-
-
-pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
-          + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
-
-pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
-f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
-f_tilde_pi_mesh = (f_tilde_mesh * pi_mesh).flatten()
-
-coeffs_pois = np.linalg.lstsq(div_pi_pois, - f_tilde_pi_mesh, rcond=None)[0]
-
-pi_dxpois = np.dot(pi_dpois, coeffs_pois[:nb_bases**2])
-pi_dypois = np.dot(pi_dpois, coeffs_pois[nb_bases**2:])
-
-dxpois = np.divide(pi_dxpois, pi_mesh)
-dypois = np.divide(pi_dypois, pi_mesh)
-
-#fig = plt.figure()
-#ax = fig.gca(projection='3d')
-#ax.plot_surface(xv, yv, f_tilde_mesh) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-#ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-
-plt.contour(xv, yv, f_tilde_mesh)
-plt.colorbar()
-plt.show()  
-
-plt.contour(xv, yv, pi_dypois)
-plt.colorbar()
-plt.show()
-
-plt.contour(xv, yv, pi_dxpois)
-plt.colorbar()
-plt.show()
-
-           
-def U(x):
-  return -np.log(pi(x))
-
-def dU(x):
-  dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
-  dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
-  dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
-  return - dpi / pi(x)
-
-dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
-            (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
-dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
-dypi_mesh = (yv-mu_1[1])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
-            (yv-mu_2[1])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
-dypi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
-dxU_mesh = - np.divide(dxpi_mesh, pi_mesh)
-dyU_mesh = - np.divide(dypi_mesh, pi_mesh)
-
-var = dxpois*pi_dxpois + dypois*pi_dypois
-var = var[:-1, :-1]
-area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
-var = 2*np.sum(var)*area
+#mu_1 = np.array([-1., 0.])
+#mu_2 = np.array([1., 0.])
+#sigma2 = 0.5
+#nb_bases = 5
+#bound_x = 3
+#bound_y = 2
+#
+#meshsize = 100
+#x = np.linspace(-bound_x, bound_x, meshsize)
+#y = np.linspace(-bound_y, bound_y, meshsize)
+#xv, yv = np.meshgrid(x, y)
+#
+#ind = 0
+#dx_pi_dxpois = np.zeros((meshsize, meshsize, nb_bases**2))
+#dy_pi_dypois = np.zeros((meshsize, meshsize, nb_bases**2))
+#pi_dpois = np.zeros((meshsize, meshsize, nb_bases**2))
+#for kx in np.arange(1, nb_bases+1):
+#  for ky in np.arange(1, nb_bases+1):
+#    dx = (kx*np.pi/2./bound_x)*np.cos(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#    dy = (ky*np.pi/2./bound_y)*np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.cos(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#    dx_pi_dxpois[:, :, ind] = dx
+#    dy_pi_dypois[:, :, ind] = dy
+#    pi_dpois[:, :, ind] = np.sin(kx*np.pi*(xv+bound_x)/(2*bound_x))*np.sin(ky*np.pi*(yv+bound_y)/(2*bound_y))
+#    ind += 1
+#    
+#dx_pi_dxpois_rect = np.reshape(dx_pi_dxpois, (meshsize**2, nb_bases**2))    
+#dy_pi_dypois_rect = np.reshape(dy_pi_dypois, (meshsize**2, nb_bases**2))    
+#
+#div_pi_pois = np.hstack((dx_pi_dxpois_rect, dy_pi_dypois_rect))
+#
+#def f(y, x):
+#  return x + y**3 + np.sin(x) + np.cos(y)
+#        
+#def pi_yx(y, x):
+#  return pi(np.array([x, y]))
+#  
+#def pi(x):
+#  return 0.5*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2)) / (2*np.pi*sigma2) \
+#          + 0.5*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2)) / (2*np.pi*sigma2)
+#
+#
+#pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
+#          + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+#
+#pi_f = integrate.dblquad(lambda y, x: f(y, x)*pi_yx(y, x), -bound_y, bound_y, lambda x: -bound_x, lambda x :bound_x)[0]
+#f_tilde_mesh = xv + yv**3 + np.sin(xv) + np.cos(yv) - pi_f
+#f_tilde_pi_mesh = (f_tilde_mesh * pi_mesh).flatten()
+#
+#coeffs_pois = np.linalg.lstsq(div_pi_pois, - f_tilde_pi_mesh, rcond=None)[0]
+#
+#pi_dxpois = np.dot(pi_dpois, coeffs_pois[:nb_bases**2])
+#pi_dypois = np.dot(pi_dpois, coeffs_pois[nb_bases**2:])
+#
+#dxpois = np.divide(pi_dxpois, pi_mesh)
+#dypois = np.divide(pi_dypois, pi_mesh)
+#
+##fig = plt.figure()
+##ax = fig.gca(projection='3d')
+##ax.plot_surface(xv, yv, f_tilde_mesh) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+##ax.plot_surface(xv[10:40, 10:40], yv[10:40, 10:40], dxpois[10:40, 10:40]) # cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+#
+#plt.contour(xv, yv, f_tilde_mesh)
+#plt.colorbar()
+#plt.show()  
+#
+#plt.contour(xv, yv, pi_dypois)
+#plt.colorbar()
+#plt.show()
+#
+#plt.contour(xv, yv, pi_dxpois)
+#plt.colorbar()
+#plt.show()
+#
+#           
+#def U(x):
+#  return -np.log(pi(x))
+#
+#def dU(x):
+#  dpi = (x-mu_1)*np.exp(-np.linalg.norm(x-mu_1)**2/(2*sigma2))
+#  dpi += (x-mu_2)*np.exp(-np.linalg.norm(x-mu_2)**2/(2*sigma2))
+#  dpi *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#  return - dpi / pi(x)
+#
+#dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+#            (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+#dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#dypi_mesh = (yv-mu_1[1])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
+#            (yv-mu_2[1])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
+#dypi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
+#dxU_mesh = - np.divide(dxpi_mesh, pi_mesh)
+#dyU_mesh = - np.divide(dypi_mesh, pi_mesh)
+#
+#var = dxpois*pi_dxpois + dypois*pi_dypois
+#var = var[:-1, :-1]
+#area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+#var = 2*np.sum(var)*area
 #print('var: {}'.format(var))
 
 #fig = plt.figure(figsize=(8,8))
