@@ -111,10 +111,10 @@ dypois = np.dot(dypois_mesh, coeffs_pois)
 Lpois = np.dot(L_pois, coeffs_pois)
 # -----------------
 
-for rcond in [10.0**(-i) for i in np.arange(2, 8)]:
-  print('------------------------')
-  print('rcond: {}'.format(rcond))
-  print('------------------------')
+#for rcond in [10.0**(-i) for i in np.arange(2, 8)]:
+#  print('------------------------')
+#  print('rcond: {}'.format(rcond))
+#  print('------------------------')
   
 #  coeffs_pois = np.linalg.lstsq(L_pois, - f_tilde_flatten, rcond=rcond)[0]
 #
@@ -122,51 +122,51 @@ for rcond in [10.0**(-i) for i in np.arange(2, 8)]:
 #  dypois = np.dot(dypois_mesh, coeffs_pois[nb_bases**2:])
 #  Lpois = np.dot(Lx_pois, coeffs_pois[:nb_bases**2]) + np.dot(Ly_pois, coeffs_pois[nb_bases**2:])
   
-  coeffs_pois = np.linalg.lstsq(L_pois_reshaped, - f_tilde_flatten, rcond=rcond)[0]
+#  coeffs_pois = np.linalg.lstsq(L_pois_reshaped, - f_tilde_flatten, rcond=rcond)[0]
 
-  dxpois = np.dot(dxpois_mesh, coeffs_pois)
-  dypois = np.dot(dypois_mesh, coeffs_pois)
-  Lpois = np.dot(L_pois, coeffs_pois)
+#  dxpois = np.dot(dxpois_mesh, coeffs_pois)
+#  dypois = np.dot(dypois_mesh, coeffs_pois)
+#  Lpois = np.dot(L_pois, coeffs_pois)
 
-  var = (dxpois**2 + dypois**2)*pi_mesh
-  var = var[:-1, :-1]
-  area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
-  var = 2*np.sum(var)*area
-  print('var: {}'.format(var))
+var = (dxpois**2 + dypois**2)*pi_mesh
+var = var[:-1, :-1]
+area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
+var = 2*np.sum(var)*area
+print('var: {}'.format(var))
 
-  norml1 = np.linalg.norm(coeffs_pois, ord=1) / len(coeffs_pois)  
-  print('norm coeffs pois: {}'.format(norml1))
-  err = np.sum(np.absolute(f_tilde_mesh + Lpois)) / meshsize**2
-  print('err: {}'.format(err))
+norml1 = np.linalg.norm(coeffs_pois, ord=1) / len(coeffs_pois)  
+print('norm coeffs pois: {}'.format(norml1))
+err = np.sum(np.absolute(f_tilde_mesh + Lpois)) / meshsize**2
+print('err: {}'.format(err))
 
-  fig = plt.figure(figsize=(16,16))
-  plt.rcParams.update({'font.size': 13}) # default 10
-  plt.subplot(2,2,1)
-  plt.pcolormesh(xv, yv, f_tilde_mesh)
-  plt.title(r"$\tilde{f}$")
-  plt.colorbar()
-  plt.subplot(2,2,2)
-  plt.pcolormesh(xv, yv, -Lpois)
-  plt.title(r"$-\mathcal{L} \hat{f}$")
-  plt.colorbar()
-  plt.subplot(2,2,3)
-  plt.pcolormesh(xv, yv, dxpois)
-  plt.title(r"$\partial_1 \hat{f}$")
-  plt.colorbar()
-  plt.subplot(2,2,4)
-  plt.pcolormesh(xv, yv, dypois)
-  plt.title(r"$\partial_2 \hat{f}$")
-  plt.colorbar()
-  plt.show()
-#fig.savefig("approx_pi_Lpois_2d_nabla_rcond5.jpeg", bbox_inches='tight')
+fig = plt.figure(figsize=(16,16))
+plt.rcParams.update({'font.size': 13}) # default 10
+plt.subplot(2,2,1)
+plt.pcolormesh(xv, yv, f_tilde_mesh)
+plt.title(r"$\tilde{f}$")
+plt.colorbar()
+plt.subplot(2,2,2)
+plt.pcolormesh(xv, yv, -Lpois)
+plt.title(r"$-\mathcal{L} \hat{f}$")
+plt.colorbar()
+plt.subplot(2,2,3)
+plt.pcolormesh(xv, yv, dxpois)
+plt.title(r"$\partial_1 \hat{f}$")
+plt.colorbar()
+plt.subplot(2,2,4)
+plt.pcolormesh(xv, yv, dypois)
+plt.title(r"$\partial_2 \hat{f}$")
+plt.colorbar()
+plt.show()
+fig.savefig("ref_hatf.jpeg", bbox_inches='tight')
   
-#fig = plt.figure(figsize=(10,10))
-#plt.rcParams.update({'font.size': 16}) # default 10
-#plt.pcolormesh(xv, yv, pi_mesh)
-#plt.colorbar()
-#plt.title(r'$\pi$')
-#plt.show()
-#fig.savefig('density_pi_2d.pdf', bbox_inches='tight')
+fig = plt.figure(figsize=(10,10))
+plt.rcParams.update({'font.size': 16}) # default 10
+plt.pcolormesh(xv, yv, pi_mesh)
+plt.colorbar()
+plt.title(r'$\pi$')
+plt.show()
+fig.savefig('density_pi_2d.jpeg', bbox_inches='tight')
            
   
 
@@ -263,8 +263,8 @@ approx_dypois_zv = np.dot(dypsi, theta_zv[n_mu_vec:])
 
 #%% CV - ZV - Gaussian kernels
 
-p = 30 # 5
-s2 = 0.3 # 1.0
+p = 10 # 5
+s2 = 1.0 # 1.0
 mu_vec = [np.array([mu1, mu2]) for mu1, mu2 in itertools.product(
     np.linspace(-bound_x, bound_x, num=p), np.linspace(-bound_y, bound_y, num=p))]
 n_mu_vec = len(mu_vec)
@@ -399,7 +399,7 @@ nb_approx_basis = 3*p**2
 
 area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
 
-f_tilde_mesh = - Lpois
+#f_tilde_mesh = - Lpois
 
 H = np.zeros((nb_approx_basis, nb_approx_basis))
 for i in np.arange(nb_approx_basis):
@@ -498,30 +498,30 @@ fig = plt.figure(figsize=(16,24))
 plt.rcParams.update({'font.size': 13}) # default 10
 plt.subplot(3,2,1)
 plt.pcolormesh(xv, yv, dxpois*pi_mesh**(1/2))
-plt.title(r"$\sqrt{\pi} \partial_1 \hat{f}$")
+plt.title(r"$\sqrt{\pi} \partial_{x_1} \phi$")
 plt.colorbar()
 plt.subplot(3,2,2)
 plt.pcolormesh(xv, yv, dypois*pi_mesh**(1/2))
-plt.title(r"$\sqrt{\pi} \partial_2 \hat{f}$")
+plt.title(r"$\sqrt{\pi} \partial_{x_2} \phi$")
 plt.colorbar()
 plt.subplot(3,2,3)
 plt.pcolormesh(xv, yv, approx_dxpois_mesh*pi_mesh**(1/2))
 plt.colorbar()
-plt.title(r"$\sqrt{\pi} \partial_1 (\theta^*)^{T} \psi$")
+plt.title(r"$\sqrt{\pi} \partial_{x_1} (\theta^*)^{T} \psi$")
 plt.subplot(3,2,4)
 plt.pcolormesh(xv, yv, approx_dypois_mesh*pi_mesh**(1/2)) #, vmin=0.0, vmax=0.45)
 plt.colorbar()
-plt.title(r"$\sqrt{\pi} \partial_2 (\theta^*)^{T} \psi$")
+plt.title(r"$\sqrt{\pi} \partial_{x_2} (\theta^*)^{T} \psi$")
 plt.subplot(3,2,5)
 plt.pcolormesh(xv, yv, approx_dxpois_zv*pi_mesh**(1/2))
 plt.colorbar()
-plt.title(r"$\sqrt{\pi} \partial_1 (\theta^*_{zv})^{T} \psi$")
+plt.title(r"$\sqrt{\pi} \partial_{x_1} (\theta^*_{zv})^{T} \psi$")
 plt.subplot(3,2,6)
 plt.pcolormesh(xv, yv, approx_dypois_zv*pi_mesh**(1/2))
 plt.colorbar()
-plt.title(r"$\sqrt{\pi} \partial_2 (\theta^*_{zv})^{T} \psi$")
+plt.title(r"$\sqrt{\pi} \partial_{x_2} (\theta^*_{zv})^{T} \psi$")
 plt.show()
-#fig.savefig("approx_pi_dpois_nabla_2d_rcond5.jpeg", bbox_inches='tight')
+fig.savefig("pi_nabla_hatf.jpeg", bbox_inches='tight')
 
 fig = plt.figure(figsize=(16,16))
 plt.rcParams.update({'font.size': 13}) # default 10
@@ -538,7 +538,7 @@ plt.pcolormesh(xv, yv, -approx_Lpois_zv*pi_mesh**(1/2))
 plt.title(r"$- \sqrt{\pi} \mathcal{L} (\theta^*_{zv})^{T} \psi$")
 plt.colorbar()
 plt.show()
-#fig.savefig("approx_pi_Lpois_2d_nabla_rcond5.jpeg", bbox_inches='tight')
+fig.savefig("pi_hatf.jpeg", bbox_inches='tight')
 
 # Unweighted. ------------------
 
@@ -569,7 +569,7 @@ plt.pcolormesh(xv, yv, approx_dypois_zv)
 plt.colorbar()
 plt.title(r"$\partial_2 (\theta^*_{zv})^{T} \psi$")
 plt.show()
-#fig.savefig("approx_dpois_2d_nabla_rcond5.jpeg", bbox_inches='tight')
+fig.savefig("nabla_hatf.jpeg", bbox_inches='tight')
 
 
 fig = plt.figure(figsize=(16,16))
@@ -587,7 +587,7 @@ plt.pcolormesh(xv, yv, -approx_Lpois_zv)
 plt.title(r"$- \mathcal{L} (\theta^*_{zv})^{T} \psi$")
 plt.colorbar()
 plt.show()
-#fig.savefig("approx_Lpois_2d_nabla_rcond5.jpeg", bbox_inches='tight')
+fig.savefig("hatf.jpeg", bbox_inches='tight')
 
 #%% Samplers and analysis
 
@@ -722,8 +722,8 @@ traj, traj_grad = ULA(step,N,n,dU)
 ns = analyse_samples(traj,traj_grad)
 ns_cv = analyse_samples(traj,traj_grad,theta=theta)
 ns_zv = analyse_samples(traj,traj_grad,theta=theta_zv)
-ns_cv = analyse_samples(traj,traj_grad,theta=theta,gaus=False)
-ns_zv = analyse_samples(traj,traj_grad,theta=theta_zv,gaus=False)
+#ns_cv = analyse_samples(traj,traj_grad,theta=theta,gaus=False)
+#ns_zv = analyse_samples(traj,traj_grad,theta=theta_zv,gaus=False)
 
 #avar, avar_cv, avar_zv = ns[0][1], ns_cv[0][1], ns_zv[0][1]
 
@@ -744,11 +744,11 @@ plt.bar(np.arange(nb_cor), a[:nb_cor], label=r"$\theta=0$", alpha=0.5)
 plt.bar(np.arange(nb_cor), a_zv[:nb_cor], label=r"$\theta=\theta^{*}_{zv}$", alpha=0.5)
 plt.bar(np.arange(nb_cor), a_cv[:nb_cor], label=r"$\theta=\theta^{*}$", alpha=0.5)
 plt.legend()
-plt.title("Autocorrelations")
+plt.title("Autocovariance")
 plt.xlabel(r"$k$")
 plt.ylabel(r"$\omega^{h}_{N,n}(k)$")
 plt.show()
-#fig.savefig("autocorrelations_2d.pdf", bbox_inches='tight')
+fig.savefig("autocorrelations_2d.pdf", bbox_inches='tight')
 
 
 
