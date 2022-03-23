@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import itertools
 
 #from scipy.optimize import minimize
-  
+
 #%% Approx \nabla \hat{f} point by point.
 
 mu_1 = np.array([-1., 0.])
@@ -30,12 +30,12 @@ x = np.linspace(-bound_x, bound_x, meshsize)
 y = np.linspace(-bound_y, bound_y, meshsize)
 xv, yv = np.meshgrid(x, y)
 
-mu_vec = [(mux, muy) for mux, muy in itertools.product(
+mu_vec = list(itertools.product(
            np.linspace(-bound_x, bound_x, num=nb_bases),
-           np.linspace(-bound_y, bound_y, num=nb_bases))]
+           np.linspace(-bound_y, bound_y, num=nb_bases)))
 
 pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
-        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)
 dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
           (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
 dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
@@ -56,14 +56,14 @@ for k, mu in enumerate(mu_vec):
   dypois[:, :, k] = dyp
   dxdxpois = -(2*np.pi*s2)**(-1)*s2**(-1)*(xv-mu[0])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
   dydypois = -(2*np.pi*s2)**(-1)*s2**(-1)*(yv-mu[1])*np.exp(-((xv-mu[0])**2 + (yv-mu[1])**2)/(2*s2))
-  
+
   dxU_dxpois = dxU_mesh * dxp
   dyU_dypois = dyU_mesh * dyp
-  
+
   Lx_pois[:, :, k] = - dxU_dxpois + dxdxpois
   Ly_pois[:, :, k] = - dyU_dypois + dydypois
-  
-Lx_pois_reshaped = np.reshape(Lx_pois, (meshsize**2, nb_bases**2))    
+
+Lx_pois_reshaped = np.reshape(Lx_pois, (meshsize**2, nb_bases**2))
 Ly_pois_reshaped = np.reshape(Ly_pois, (meshsize**2, nb_bases**2))    
 
 L_pois = np.hstack((Lx_pois_reshaped, Ly_pois_reshaped))
@@ -136,7 +136,7 @@ plt.title(r"$\partial_2 \hat{f}$")
 plt.colorbar()
 plt.show()
 #fig.savefig("approx_pi_Lpois_2d_nabla_rcond5.jpeg", bbox_inches='tight')
-  
+
 #fig = plt.figure(figsize=(10,10))
 #plt.rcParams.update({'font.size': 16}) # default 10
 #plt.pcolormesh(xv, yv, pi_mesh)
@@ -144,13 +144,13 @@ plt.show()
 #plt.title(r'$\pi$')
 #plt.show()
 #fig.savefig('density_pi_2d.pdf', bbox_inches='tight')
-           
-  
+
+
 var = (dxpois**2 + dypois**2)*pi_mesh
 var = var[:-1, :-1]
 area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
 var = 2*np.sum(var)*area
-print('var: {}'.format(var))
+print(f'var: {var}')
 
 def U(x):
   return -np.log(pi(x))

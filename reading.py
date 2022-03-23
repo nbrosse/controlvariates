@@ -67,7 +67,7 @@ for l in np.arange(4):
                 df2[compt] = tab_labels[j] 
                 df3[compt] = tab_titles[k]
                 compt +=1
-    
+
     df = np.rec.fromarrays((df1,df2,df3), names=(xnames[l], "method", "algorithm"))    
     dfp = pd.DataFrame(df)    
     ldfp.append(dfp)
@@ -131,14 +131,14 @@ for k in np.arange(12):
     plt.boxplot(temp, labels=tab_labels)
 #    plt.ylim(mini, maxi)
     if (k % 3)==0:
-        st = r"$x_" + str(k // 3 +1) + "$"
+        st = f"$x_{str(k // 3 +1)}$"
         plt.ylabel(st)
     plt.title(tab_titles[k % 3])
     plt.grid(True)
 
 #plt.suptitle("Ill conditionned Gaussian, first coordinate, error " \
 #          + indi +" moment, N=10**6, dimension " + str(d) + " , x0=" + str(x0Tab[x0_ind]))
-plt.show() 
+plt.show()
 f.savefig("log-1-1.pdf", bbox_inches='tight')
 
 # \beta^2_1, ..., \beta^2_d
@@ -151,14 +151,14 @@ for k in np.arange(12):
     temp = np.transpose(tab_log[::2,:,4 + k // 3,k % 3])
     plt.boxplot(temp, labels=tab_labels)
     if (k % 3)==0:
-        st = r"$(x_" + str(k // 3 +1) + ")^2$"
+        st = f"$(x_{str(k // 3 +1)})^2$"
         plt.ylabel(st)
     plt.title(tab_titles[k % 3])
     plt.grid(True)
 
 #plt.suptitle("Ill conditionned Gaussian, first coordinate, error " \
 #          + indi +" moment, N=10**6, dimension " + str(d) + " , x0=" + str(x0Tab[x0_ind]))
-plt.show() 
+plt.show()
 f.savefig("log-2-1.pdf", bbox_inches='tight')
 
 
@@ -211,6 +211,7 @@ ldfp = []
 indices = np.array([3,4,5]) #indices = np.array([0,1,4,5])
 #xnames = ["x_1", "x_2", "x_1^2", "x_2^2"]
 xnames = ["x_1^2", "x_2^2", "x_3^2"]
+nb_methods = 5
 #xnames_tex = ["$x_1$", "$x_2$", "$x_1^2$", "$x_2^2$"]
 
 for l in np.arange(3):
@@ -221,7 +222,6 @@ for l in np.arange(3):
     df2 = np.empty(a.size, dtype=np.dtype('U25'))
     df3 = np.empty(a.size, dtype=np.dtype('U25'))
     compt = 0
-    nb_methods = 5
     tab_labels = ["O", "CV-1", "CV-2", "ZV-1", "ZV-2"]
     for i in np.arange(nc):
         for j in np.arange(nb_methods):
@@ -230,9 +230,9 @@ for l in np.arange(3):
                 df2[compt] = tab_labels[j] 
                 df3[compt] = tab_titles[k]
                 compt +=1
-    
-    df = np.rec.fromarrays((df1,df2,df3), names=(xnames[l], "method", "algorithm"))    
-    dfp = pd.DataFrame(df)    
+
+    df = np.rec.fromarrays((df1,df2,df3), names=(xnames[l], "method", "algorithm"))
+    dfp = pd.DataFrame(df)
     ldfp.append(dfp)
 
 f = plt.figure(figsize=(16,16))
@@ -261,14 +261,14 @@ for k in np.arange(9):
     temp = np.transpose(tab_pro[::2,:,k // 3,k % 3])
     plt.boxplot(temp, labels=tab_labels)
     if (k % 3)==0:
-        st = r"$x_" + str(k // 3 +1) + "$"
+        st = f"$x_{str(k // 3 +1)}$"
         plt.ylabel(st)
     plt.title(tab_titles[k % 3])
     plt.grid(True)
 
 #plt.suptitle("Ill conditionned Gaussian, first coordinate, error " \
 #          + indi +" moment, N=10**6, dimension " + str(d) + " , x0=" + str(x0Tab[x0_ind]))
-plt.show() 
+plt.show()
 f.savefig("pro-1-1.pdf", bbox_inches='tight')
 
 # \beta^2_1, ..., \beta^2_d
@@ -281,12 +281,12 @@ for k in np.arange(9):
     temp = np.transpose(tab_pro[::2,:,3 + k // 3,k % 3])
     plt.boxplot(temp, labels=tab_labels)
     if (k % 3)==0:
-        st = r"$(x_" + str(k // 3 +1) + ")^2$"
+        st = f"$(x_{str(k // 3 +1)})^2$"
         plt.ylabel(st)
     plt.title(tab_titles[k % 3])
     plt.grid(True)
 
 #plt.suptitle("Ill conditionned Gaussian, first coordinate, error " \
 #          + indi +" moment, N=10**6, dimension " + str(d) + " , x0=" + str(x0Tab[x0_ind]))
-plt.show() 
+plt.show()
 f.savefig("pro-2-1.pdf", bbox_inches='tight')

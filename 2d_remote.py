@@ -14,7 +14,7 @@ import scipy.integrate as integrate
 import itertools
 
 #from scipy.optimize import minimize
-  
+
 #%% Approx \nabla \hat{f} point by point.
 
 mu_1 = np.array([-1., 0.])
@@ -30,12 +30,12 @@ x = np.linspace(-bound_x, bound_x, meshsize)
 y = np.linspace(-bound_y, bound_y, meshsize)
 xv, yv = np.meshgrid(x, y)
 
-mu_vec = [(mux, muy) for mux, muy in itertools.product(
+mu_vec = list(itertools.product(
            np.linspace(-bound_x, bound_x, num=nb_bases),
-           np.linspace(-bound_y, bound_y, num=nb_bases))]
+           np.linspace(-bound_y, bound_y, num=nb_bases)))
 
 pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
-        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)
 dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
           (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
 dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
@@ -112,7 +112,7 @@ var = (dxpois**2 + dypois**2)*pi_mesh
 var = var[:-1, :-1]
 area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
 var = 2*np.sum(var)*area
-print('var: {}'.format(var))
+print(f'var: {var}')
            
   
 
