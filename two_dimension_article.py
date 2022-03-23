@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import itertools
 
 #from scipy.optimize import minimize
-  
+
 #%% Approx \nabla \hat{f} point by point.
 
 mu_1 = np.array([-1., 0.])
@@ -30,12 +30,12 @@ x = np.linspace(-bound_x, bound_x, meshsize)
 y = np.linspace(-bound_y, bound_y, meshsize)
 xv, yv = np.meshgrid(x, y)
 
-mu_vec = [(mux, muy) for mux, muy in itertools.product(
+mu_vec = list(itertools.product(
            np.linspace(-bound_x, bound_x, num=nb_bases),
-           np.linspace(-bound_y, bound_y, num=nb_bases))]
+           np.linspace(-bound_y, bound_y, num=nb_bases)))
 
 pi_mesh = 0.5*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) / (2*np.pi*sigma2) \
-        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)  
+        + 0.5*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2)) / (2*np.pi*sigma2)
 dxpi_mesh = (xv-mu_1[0])*np.exp(-((xv-mu_1[0])**2+(yv-mu_1[1])**2)/(2*sigma2)) + \
           (xv-mu_2[0])*np.exp(-((xv-mu_2[0])**2+(yv-mu_2[1])**2)/(2*sigma2))
 dxpi_mesh *= (-0.5)*sigma2**(-1)*(2*np.pi*sigma2)**(-1.)
@@ -115,13 +115,13 @@ Lpois = np.dot(L_pois, coeffs_pois)
 #  print('------------------------')
 #  print('rcond: {}'.format(rcond))
 #  print('------------------------')
-  
+
 #  coeffs_pois = np.linalg.lstsq(L_pois, - f_tilde_flatten, rcond=rcond)[0]
 #
 #  dxpois = np.dot(dxpois_mesh, coeffs_pois[:nb_bases**2])
 #  dypois = np.dot(dypois_mesh, coeffs_pois[nb_bases**2:])
 #  Lpois = np.dot(Lx_pois, coeffs_pois[:nb_bases**2]) + np.dot(Ly_pois, coeffs_pois[nb_bases**2:])
-  
+
 #  coeffs_pois = np.linalg.lstsq(L_pois_reshaped, - f_tilde_flatten, rcond=rcond)[0]
 
 #  dxpois = np.dot(dxpois_mesh, coeffs_pois)
@@ -132,12 +132,12 @@ var = (dxpois**2 + dypois**2)*pi_mesh
 var = var[:-1, :-1]
 area = (xv[0, 1] - xv[0, 0])*(yv[1, 0] - yv[0, 0])
 var = 2*np.sum(var)*area
-print('var: {}'.format(var))
+print(f'var: {var}')
 
-norml1 = np.linalg.norm(coeffs_pois, ord=1) / len(coeffs_pois)  
-print('norm coeffs pois: {}'.format(norml1))
+norml1 = np.linalg.norm(coeffs_pois, ord=1) / len(coeffs_pois)
+print(f'norm coeffs pois: {norml1}')
 err = np.sum(np.absolute(f_tilde_mesh + Lpois)) / meshsize**2
-print('err: {}'.format(err))
+print(f'err: {err}')
 
 fig = plt.figure(figsize=(16,16))
 plt.rcParams.update({'font.size': 13}) # default 10
@@ -159,7 +159,7 @@ plt.title(r"$\partial_2 \hat{f}$")
 plt.colorbar()
 plt.show()
 fig.savefig("ref_hatf.jpeg", bbox_inches='tight')
-  
+
 fig = plt.figure(figsize=(10,10))
 plt.rcParams.update({'font.size': 16}) # default 10
 plt.pcolormesh(xv, yv, pi_mesh)
